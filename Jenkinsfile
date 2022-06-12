@@ -1,33 +1,24 @@
-node('') {
-	stage ('checkout code'){
-		checkout scm
-	}
-	
-	stage ('Build'){
-		sh "mvn clean install -Dmaven.test.skip=true"
-	}
-
-	stage ('Test Cases Execution'){
-		sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Pcoverage-per-test"
-	}
-
-	stage ('Sonar Analysis'){
-		//sh 'mvn sonar:sonar -Dsonar.host.url=http://35.153.67.119:9000 -Dsonar.login=77467cfd2653653ad3b35463fbfdb09285f08be5'
-	}
-
-	stage ('Archive Artifacts'){
-		archiveArtifacts artifacts: 'target/*.war'
-	}
-	
-	stage ('Deployment'){
-		ansiblePlaybook colorized: true, disableHostKeyChecking: true, playbook: 'deploy.yml'
-	}
-	
-	stage ('Notification'){
-		emailext (
-		      subject: "Job Completed",
-		      body: "Jenkins Pipeline Job for Maven Build got completed !!!",
-		      to: "build-alerts@example.com"
-		    )
-	}
+node{
+   stage('SCM Checkout'){
+       git credentialsId: 'git_creds', url: 'https://github.com/vathithanj/MavenBuild.git'
+   }
+   stage('Mvn Package'){
+     sh "mvn clean package"
+   }
+   stage('Build Docker Image'){
+     sh 'docker build -t vathithan/my-cicd-app:1.0.0 .'
+   }
+   stage('Push Docker Image'){
+     withCredentials([string(credentialsId: 'dockerHub-Pwd', variable: 'dockerHubPwd')]) {
+        sh "docker login -u vathithan -p ${dockerHubPwd}"
+     }
+     sh 'docker push vathithan/my-cicd-app:1.0.0'
+   }
+   stage('Run Container on worker Server'){
+     def dockerRun = 'docker run -p 8080:8080 -d --name my-cicd-app vathithan/my-cicd-app:1.0.0'
+     sshagent(['worker-server']) {
+       sh "ssh -o StrictHostKeyChecking=no ubuntu@54.211.235.31 ${dockerRun}"
+       //sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.93.216 whoami"
+     }
+   }
 }
