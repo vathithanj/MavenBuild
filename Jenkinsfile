@@ -17,8 +17,7 @@ node{
    stage('Run Container on worker Server'){
      def dockerRun = 'docker run -p 8080:8080 -d --name my-cicd-app vathithan/my-cicd-app:1.0.0'
      sshagent(['worker-server']) {
-       sh "ssh -o StrictHostKeyChecking=no ubuntu@54.211.235.31 ${dockerRun}"
-       //sh "ssh -o StrictHostKeyChecking=no ubuntu@172.31.93.216 whoami"
+       sh "ssh -o StrictHostKeyChecking=no ubuntu@54.211.235.31 ${dockerRun}"       
      }
    }
 }
