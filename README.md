@@ -1,4 +1,4 @@
-HelloWorld Servlet example with corresponding Dockerfile
+This is a sample web application.
 
 Use Maven Build first to create war file in Target folder.
 
@@ -6,10 +6,8 @@ mvn clean package
 
 Artifact will be created in target folder.
 
-docker build -t mavenbuild .
+Then build the docker image.
 
-Once this is done u will be see image using docker image
+Deploy the image on the docker container (woreker-server)
 
-Use below command to run the container
-
-docker run -d -p 8080:8080 --name dockercontainer mavenbuild
+Then access the application using http://<<IP Address of woreker-server>>:8080/my-cicd-app
